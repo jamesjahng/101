@@ -12,20 +12,20 @@ class User():
 
     def signup(self):
         uid = input('아이디 : ')
-        upasswd = input('비밀번호 : ')
-        encoded_upw = upasswd.encode()
-        hexdigest_upw = hashlib.sha256(encoded_upw).hexdigest()
+        upasswd = getpass.getpass(prompt = '비밀번호 : ', stream = None)
+        hexdigest_upw = hashlib.sha256(upasswd.encode()).hexdigest()
         data = {uid:hexdigest_upw}
         with open('account.csv', 'a', encoding = "euc-kr") as f:
-            [f.write('{0},{1}\n'.format(key, value)) for key, value in data.items()]
+            # [f.write('{0},{1}\n'.format(key, value)) for key, value in data.items()]
+            [f.write(f'{key},{value}\n') for key, value in data.items()] # python 3.6↑부터 지원
         self.sign_in_id = uid
         
     def signin(self):
             self.sign_in_id = input('아이디 : ')
-            sign_in_pw = getpass.getpass(prompt = '패스워드 : ', stream = None)
-            encoded_pw = sign_in_pw.encode()
-            hexdigest_pw = hashlib.sha256(encoded_pw).hexdigest()
-            account = '{0},{1}'.format(self.sign_in_id,hexdigest_pw)
+            sign_in_pw = getpass.getpass(prompt = '비밀번호 : ', stream = None)
+            hexdigest_pw = hashlib.sha256(sign_in_pw.encode()).hexdigest()
+            # account = '{0},{1}'.format(self.sign_in_id,hexdigest_pw)
+            account = f'{self.sign_in_id},{hexdigest_pw}'
             with open('account.csv', mode = 'r', encoding = 'euc-kr') as f:
                 account_list = [line.rstrip() for line in f] # 개행문자 제거한 리스트 생성
             if account not in account_list: # 아이디,패스워드 값을 account_list와 비교
@@ -140,7 +140,8 @@ def feature_list():
     print('--------------------------------------------------------')
 
 def success_signin_message():
-    print('로그인 성공 : 환영합니다', '{}님!'.format(user.sign_in_id))
+    # print('로그인 성공 : 환영합니다', '{}님!'.format(user.sign_in_id))
+    print('로그인 성공 : 환영합니다', f'{user.sign_in_id}님!')
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
