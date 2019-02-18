@@ -1,6 +1,9 @@
 # 예외처리(FileNotFoundError, PostNotFoundError, IndexError, ValueError)
+# 예외처리(페이지가 글전체/15보다 큰경우, 페이지가 0이하인 경우, 없는글번호)
+# 사용자 입력받는 함수 작성(m,n)
 # 데코레이터(자동저장, 실행권한)
 # 메소드 구현(save, load)
+
 import os
 import datetime
 import hashlib
@@ -128,15 +131,15 @@ def print_login_message():
     print(login_message)
 
 
-def feature_list():
-    feature_list = '''
+def show_actions():
+    show_actions = '''
     1. 작성하기
     2. 수정하기
     3. 삭제하기
     4. 다음 페이지로
     5. 이전 페이지로
     '''
-    print(feature_list)
+    print(show_actions)
     print('--------------------------------------------------------')
 
 def success_signin_message():
@@ -161,7 +164,7 @@ if __name__ == "__main__":
     while True:
         ##clear()
         board.list_posts()
-        feature_list()
+        show_actions()
         n = int(input(' >'))
         if n == 1 :
              board.create_post()
