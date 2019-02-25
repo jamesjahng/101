@@ -1,5 +1,6 @@
 import requests
 import datetime
+import pandas as pd
 from bs4 import BeautifulSoup
 
 class DailyPrice():
@@ -31,7 +32,7 @@ def get_stock_code_and_end_date():
     # stock_code = input('검색할 종목 코드:')
     # end_date = input('언제까지 검색할까요? (YYYY-MM-DD): ')
     stock_code = '005930'
-    end_date = '2017-01-25'
+    end_date = '2019-01-25'
     return stock_code, datetime.datetime.strptime(end_date, '%Y-%m-%d') # 튜플로 리턴됨
 
 def scrap_from_naver_finance(stock_code, end_date):
