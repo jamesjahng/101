@@ -1,13 +1,21 @@
-# 예외처리(FileNotFoundError, PostNotFoundError, IndexError, ValueError)
-# 예외처리(페이지가 글전체/15보다 큰경우, 페이지가 0이하인 경우, 없는글번호)
+# 예외처리(PostNotFoundError, IndexError, ValueError)
+# 예외처리(없는글번호)
 # 사용자 입력받는 함수 작성(m,n)
-# 데코레이터(자동저장, 실행권한)
-# 메소드 구현(save, load)
+# 데코레이터(실행권한)
+# Logical delete 구현
 
 import os
 import datetime
 import hashlib
 import getpass
+
+SAVE_FILE_PATH = 'save.csv'
+
+def autosave(func):
+    def decorated(caller, *args, **kwargs):
+        func(caller, *args, **kwargs)
+        caller.save()
+    return decorated
 
 class User():
     def __init__(self, sign_in_id=None):
@@ -46,10 +54,12 @@ class Board():
     post_per_pages = 15
     
     def __init__(self):
-          self.posts = []
-          self.current_page = 1
-          ##self.load() ## 파일이 존재하지 않는 상황에 대한 예외처리 필요
-
+        self.posts = []
+        self.current_page = 1
+        try:
+            self.load()
+        except FileNotFoundError:
+            pass
     def search_post_by_id(self, pid):
         for index, post in enumerate(self.posts):
             if post.has_pid(pid):
@@ -66,29 +76,46 @@ class Board():
         for post in self.posts[page_from : page_to]:
             print(post)
             
-
+    @autosave
     def create_post(self): #1
         title = input('작성 > ')
         self.posts.insert(0, Post(title))
 
+    @autosave
     def modify_post(self): #잘못된 글 번호 입력에 대한 예외처리 필요 #2
         pid = int(input('몇번 글을 수정할까요? '))
         new_title = input('수정 > ')
         _, post = self.search_post_by_id(pid)
         post.modify(new_title)
-                      
+
+    @autosave         
     def delete_post(self): #삭제가 아닌 hidden 처리 필요 #잘못된 글 번호 입력에 대한 예외처리 필요 #3
         pid = int(input('몇번 글을 지울까요? '))
         index, _ = self.search_post_by_id(pid)
         del self.posts[index]
+
+    def load(self):
+        global SAVE_FILE_PATH
+        f = open(SAVE_FILE_PATH, 'r', encoding='euc-kr')
+        posts = f.readlines()
+        for post in posts:
+            self.posts.append(Post.from_csv(post))
+        f.close()
+    
+    def save(self):
+        global SAVE_FILE_PATH
+        f = open(SAVE_FILE_PATH, 'w', encoding='euc-kr')
+        for post in self.posts:
+            print(post.to_csv(), file=f)
+        f.close()
 
     def next_page(self): #4
         if self.current_page * Board.post_per_pages < len(self.posts):
             self.current_page += 1
 
     def previous_page(self): #5
-        if self.current_page < 1:
-            self.current_page -= 1    
+        if self.current_page > 1:
+            self.current_page -= 1
 
 class Post():
     pid = 1
@@ -108,6 +135,14 @@ class Post():
 
     def has_pid(self, pid):
         return self.pid == pid
+
+    @classmethod
+    def from_csv(cls, csv):
+        pid, title, created_at = csv[:-1].split(',')
+        return cls(title, pid, created_at)
+    
+    def to_csv(self):
+        return '{},{},{}'.format(self.pid, self.title, self.created_at)
     
 
 def print_greeting_message():
